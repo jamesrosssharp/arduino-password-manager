@@ -6,6 +6,10 @@
 
 #include "uart.h"
 
+#include "debug.h"
+
+int a;
+
 int main (void)
 {
 	// Arduino digital pin 13 (pin 5 of PORTB) for output
@@ -15,7 +19,7 @@ int main (void)
 
 	while(1) 
 	{
-		uart_send_byte('A');	
+		DEBUG("Hello world! %x\n", 0x69);
 
 		// turn LED on
 		PORTB |= 0B100000; // PORTB5

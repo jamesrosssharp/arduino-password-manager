@@ -1,9 +1,10 @@
-CFLAGS ?= -Os -DF_CPU=16000000UL -mmcu=atmega328p
-LDFLAGS ?= -mmcu=atmega328p
+MCU=atmega328p
+CFLAGS ?= -Os -DF_CPU=16000000UL -mmcu=$(MCU)
+LDFLAGS ?= -mmcu=$(MCU)
 ARDUINO_USB ?= /dev/ttyACM0
 
 TARGET=pw.hex
-TARGET_BIN=$(patsubst %.hex,%.bin,$(TARGET))
+TARGET_BIN=$(patsubst %.hex,%.elf,$(TARGET))
 
 BUILD_DIR=build
 SRC_DIR=src
@@ -19,9 +20,11 @@ $(BUILD_DIR)/$(TARGET): $(BUILD_DIR)/$(TARGET_BIN)
 
 $(BUILD_DIR)/$(TARGET_BIN): $(OBJS)
 	avr-gcc $(LDFLAGS) -o $@ $(OBJS)
+	avr-strip -s $@
+	avr-size --mcu=$(MCU) -A --totals $@
 
-$(BUILD_DIR)/%.o: %.c
-	@mkdir -p $(addprefix $(BUILD_DIR)/, $(dir $<))
+$(BUILD_DIR)/%.o: %.c Makefile
+	@mkdir -p $(addprefix $(BUILD_DIR)/, $(dir $^))
 	avr-gcc $(CFLAGS) -c -o $@ $<
 
 prog: $(BUILD_DIR)/$(TARGET)

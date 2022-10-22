@@ -1,11 +1,20 @@
+/*
+ *	(C) 2022 J. R. Sharp	
+ *
+ *	Released under MIT License
+ * 	See LICENSE.txt for License Terms
+ *
+ *	uart.c: UART functions
+ */
+ 
 #include <avr/io.h>
 
 #include "uart.h"
 
 #define BAUD_RATE 9600
-#define BAUD_PRESCALE (F_CPU/16/BAUD_RATE-1)
+#define BAUD_PRESCALE (F_CPU / 16 / BAUD_RATE - 1)
 
-FILE uart_output = FDEV_SETUP_STREAM(uart_send_byte, NULL, _FDEV_SETUP_WRITE);
+FILE uart_output = FDEV_SETUP_STREAM(uart_write_char, NULL, _FDEV_SETUP_WRITE);
 
 void uart_initialize(void) 
 {
@@ -16,10 +25,10 @@ void uart_initialize(void)
 	stdout = &uart_output;
 }
 
-int uart_send_byte(char byte, FILE *stream) 
+int uart_write_char(char byte, FILE *stream) 
 {
 	if (byte == '\n') {
-		uart_send_byte('\r',stream);
+		uart_write_char('\r',stream);
 	}
 
 	loop_until_bit_is_set(UCSR0A,UDRE0);

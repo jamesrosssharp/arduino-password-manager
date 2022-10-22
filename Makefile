@@ -20,7 +20,7 @@ $(BUILD_DIR)/$(TARGET): $(BUILD_DIR)/$(TARGET_BIN)
 
 $(BUILD_DIR)/$(TARGET_BIN): $(OBJS)
 	avr-gcc $(LDFLAGS) -o $@ $(OBJS)
-	avr-strip -s $@
+#	avr-strip -s $@
 	avr-size --mcu=$(MCU) -A --totals $@
 
 $(BUILD_DIR)/%.o: %.c Makefile

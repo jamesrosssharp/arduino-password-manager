@@ -9,6 +9,8 @@
  
 #pragma once
 
+#include <stdio.h>
+
 #ifndef RELEASE
 #define DEBUG(...) printf(__VA_ARGS__)
 #else

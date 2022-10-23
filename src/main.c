@@ -18,6 +18,7 @@
 #include "uart.h"
 #include "debug.h"
 #include "gpio.h"
+#include "lcd.h"
 
 #define LED_PORT GPIO_PORTB
 #define LED_PIN	 5
@@ -28,9 +29,14 @@ int main (void)
 
 	uart_initialize();
 
+	DEBUG("Hello world! LCD ID = %x\n", lcd_read_id());
+
+	lcd_init();
+	
+	lcd_clear(0x00, 0xff, 0x00);
+
 	while(1) 
 	{
-		DEBUG("Hello world!\n");
 
 		// turn LED on
 		gpio_set(LED_PORT, LED_PIN);

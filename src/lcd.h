@@ -17,4 +17,6 @@
 uint16_t lcd_read_id();
 void lcd_init();
 
-void lcd_clear(uint8_t r, uint8_t g, uint8_t b);
+void lcd_clear(uint16_t col);
+void lcd_fill_rect(int x, int y, int w, int h, uint16_t col);
+void lcd_draw_bitmap(int x, int y, int w, int h, uint16_t fg_col, uint16_t bg_col, const uint8_t* bitmap);

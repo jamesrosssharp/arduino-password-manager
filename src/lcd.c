@@ -202,7 +202,7 @@ void lcd_init()
 
 }
 
-void lcd_clear(uint8_t r, uint8_t g, uint8_t b)
+static void lcd_setup_gram()
 {
 	PORTC = COMMAND_PINS; 
 	DDRC = COMMAND_PINS;
@@ -220,33 +220,102 @@ void lcd_clear(uint8_t r, uint8_t g, uint8_t b)
 	PORTC &= ~(WR_PIN);
 	PORTC |= WR_PIN;
 	PORTC |= RS_PIN;
+}
 
-	uint8_t lo = 0;
-	uint8_t hi = 0;
+void lcd_wr_gram(uint8_t hi, uint8_t lo)
+{
+	PORTB = (PORTB & ~DATA_PINS_PORTB) | (hi & DATA_PINS_PORTB);
+	PORTD = (PORTD & ~DATA_PINS_PORTD) | (hi & DATA_PINS_PORTD);
+	PORTC &= ~(WR_PIN);
+	PORTC |= WR_PIN;
+	PORTB = (PORTB & ~DATA_PINS_PORTB) | (lo & DATA_PINS_PORTB);
+	PORTD = (PORTD & ~DATA_PINS_PORTD) | (lo & DATA_PINS_PORTD);
+	PORTC &= ~(WR_PIN);
+	PORTC |= WR_PIN;
+}
 
-	hi = (r&0xf8) | (g >> 5);
-	lo = (g << 5) | (b >> 3); 	
-
-	for (int x = 0; x < 320; x++)
-	{
-		for (int y = 0; y < 240; y++)
-		{
-
-			PORTB = (PORTB & ~DATA_PINS_PORTB) | (hi & DATA_PINS_PORTB);
-			PORTD = (PORTD & ~DATA_PINS_PORTD) | (hi & DATA_PINS_PORTD);
-			PORTC &= ~(WR_PIN);
-			PORTC |= WR_PIN;
-			PORTB = (PORTB & ~DATA_PINS_PORTB) | (lo & DATA_PINS_PORTB);
-			PORTD = (PORTD & ~DATA_PINS_PORTD) | (lo & DATA_PINS_PORTD);
-			PORTC &= ~(WR_PIN);
-			PORTC |= WR_PIN;
-		}
-	}
-
+void lcd_finish_gram()
+{
 	DDRB &= ~DATA_PINS_PORTB;
 	DDRD &= ~DATA_PINS_PORTD;
 
 	PORTC |= CS_PIN;
 }
+
+void lcd_clear(uint16_t col)
+{
+	lcd_fill_rect(0, 0, 240, 320, col);
+}
+
+void lcd_setup_area(int x, int y, int w, int h)
+{
+	lcd_write_reg(2, x>>8);
+	lcd_write_reg(3, x&0xff);
+	lcd_write_reg(4, (x+w-1)>>8);
+	lcd_write_reg(5, (x+w-1)&0xff);
+	lcd_write_reg(6, y>>8);
+	lcd_write_reg(7, y&0xff);
+	lcd_write_reg(8, (y+h-1)>>8);
+	lcd_write_reg(9, (y+h-1)&0xff);
+}
+
+void lcd_fill_rect(int x, int y, int w, int h, uint16_t col)
+{
+	lcd_setup_area(x, y, w, h);
+
+	lcd_setup_gram();
+
+	uint8_t hi = col >> 8;
+	uint8_t lo = col & 0xff;
+
+	for (int yy = 0; yy < h; yy++)
+	{
+		for (int xx = 0; xx < w; xx++)
+		{
+			lcd_wr_gram(hi, lo);
+		}
+	}	
+
+	lcd_finish_gram();
+}
+
+void lcd_draw_bitmap(int x, int y, int w, int h, uint16_t fg_col, uint16_t bg_col, const uint8_t* bitmap)
+{
+	lcd_setup_area(x, y, w, h);
+
+	lcd_setup_gram();
+
+	uint8_t hi_fg = fg_col >> 8;
+	uint8_t lo_fg = fg_col & 0xff;
+	uint8_t hi_bg = bg_col >> 8;
+	uint8_t lo_bg = bg_col & 0xff;
+
+	uint8_t curbyte = 0;
+	uint8_t bits = 0;
+
+	for (int yy = 0; yy < h; yy++)
+	{
+		for (int xx = 0; xx < w; xx++)
+		{
+			if (bits == 0)
+			{
+				curbyte = pgm_read_byte(bitmap++);
+				bits = 8;
+			}
+
+			if (curbyte & 0x80)
+				lcd_wr_gram(hi_fg, lo_fg);
+			else
+				lcd_wr_gram(hi_bg, lo_bg);
+			
+			curbyte <<= 1;
+			bits --;
+		}
+	}	
+
+	lcd_finish_gram();
+}
+
+
 
 

@@ -19,6 +19,7 @@
 #include "debug.h"
 #include "gpio.h"
 #include "lcd.h"
+#include "adc.h"
 
 #include <avr/pgmspace.h>
 
@@ -61,13 +62,19 @@ int main (void)
 	lcd_init();
 	
 	lcd_clear(COL_WHITE);
-	//lcd_fill_rect(120 - 4, 160 - 4, 8, 8, COL_RED);
+	lcd_fill_rect(20, 20, 200, 280, COL_RED);
 
-	lcd_draw_bitmap(120 - 20 - 4, 160 - 4, 27, 46, COL_BLACK, COL_WHITE, bitmap);
+	lcd_draw_bitmap(120 - 20 - 4, 160 - 4, 27, 46, COL_BLACK, COL_RED, bitmap);
 	
 	while(1) 
 	{
 
+		uint16_t x, y, z;
+
+		ts_read(&x, &y, &z);
+
+		DEBUG("TS x = %d, y = %d, z = %d\n", x, y, z);
+		
 		// turn LED on
 		gpio_set(LED_PORT, LED_PIN);
 		_delay_ms(BLINK_DELAY_MS);

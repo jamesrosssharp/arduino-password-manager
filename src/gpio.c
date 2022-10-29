@@ -27,6 +27,22 @@ void gpio_set_output(uint8_t port, uint8_t pin)
 	} 
 }
 
+void gpio_set_input(uint8_t port, uint8_t pin)
+{
+	switch (port)
+	{
+		case GPIO_PORTB:
+			DDRB &= ~(1<<pin);
+			break;
+		case GPIO_PORTC:
+			DDRC &= ~(1<<pin);
+			break;
+		case GPIO_PORTD:
+			DDRD &= ~(1<<pin);
+			break;
+	} 
+}
+
 void gpio_set(uint8_t port, uint8_t pin)
 {
 	switch (port)
